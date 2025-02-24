@@ -1,5 +1,5 @@
 # globes_dune
-DUNE sensitivity study using GLoBES.
+DUNE sensitivity study using GLoBES (https://www.mpi-hd.mpg.de/personalhomes/globes/index.html).
 
 Originally written by Xuyang Ning (xning@bnl.gov).
 
