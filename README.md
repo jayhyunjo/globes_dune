@@ -29,7 +29,7 @@ In process.sh you can choose whatever you want to run.
 For delta CP, the output result would be dune_dcp_{tag}.dat and the result can be drawn in plot.cc
 
 Some other information:
-- The smear matrix is defined in folder smr/
+- Smearing matrix is defined in folder smr/
 - DUNE flux is in the folder flux/
 - Channels and rules are defined in DUNE_GLoBES.glb
 - Systematic uncertainties are defined in definitions.inc
