@@ -6,8 +6,11 @@ Originally written by Xuyang Ning (xning@bnl.gov).
 Requires GLoBES v3.2.18 to run.
 
 dune.c	  for delta CP
+
 dune_hie.c  for mass order
+
 dune_stage.c for DUNE staged sensitivity
+
 dune_res.c  for resolution (This result is not consistency with DUNE TDR)
 
 To compile:
