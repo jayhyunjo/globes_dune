@@ -18,7 +18,7 @@ make dune_stage
 make dune_res
 
 A script all.sh that can change the smear matrix and run everything. 
-Tag “ori” is the original result in DUNE. Others are the number of different method.
+Tag “ori” is the original result in DUNE. Others are the number of different reconstruction method. For conventions, please refer to this paper: https://journals.aps.org/prd/abstract/10.1103/PhysRevD.111.032007
 
 0-2 are for Q1 to Q3; 
 3 is for Q4 which we didn’t shown in the paper.
