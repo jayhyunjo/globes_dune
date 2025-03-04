@@ -6,16 +6,20 @@ Originally written by Xuyang Ning (xning@bnl.gov).
 Requires GLoBES v3.2.18 to run.
 
 - dune.c	  for delta CP
+<<<<<<< HEAD
 - dune_hie.c  for mass ordering
+=======
+- dune_hie.c  for mass order
+>>>>>>> b078d2b (Updated README)
 - dune_stage.c for DUNE staged sensitivity
 - dune_res.c  for resolution (This result is not consistency with DUNE TDR)
 
 To compile:
 
-make dune
-make dune_hie
-make dune_stage
-make dune_res
+- make dune
+- make dune_hie
+- make dune_stage
+- make dune_res
 
 A script all.sh that can change the smear matrix and run everything. 
 Tag “ori” is the original result in DUNE. Others are the number of different reconstruction method. For conventions, please refer to this paper: https://journals.aps.org/prd/abstract/10.1103/PhysRevD.111.032007
