@@ -5,31 +5,69 @@ Originally written by Xuyang Ning (xning@bnl.gov).
 
 Requires GLoBES v3.2.18 to run.
 
-- dune.c	  for delta CP
-- dune_hie.c  for mass ordering
-- dune_stage.c for DUNE staged sensitivity
-- dune_res.c  for resolution (This result is not consistency with DUNE TDR)
+## Main Entrypoints
+- `dune.c`: Evaluates DUNE’s sensitivity to $\delta_{CP}$ (CP Violation).
+- `dune_hie.c`: Evaluates DUNE's sensitivity to mass hierarchy / mass ordering (NMO vs. IMO).
+- `dune_stage.c`: Evaluates DUNE staged exposure sensitivity.
+- `dune_res.c`: Evaluates energy resolution sensitivities. (Note: This result is not consistent with DUNE TDR).
+- `run_scenarios.py`: A python pipeline that automatically compares four distinct calorimeter scenarios (TDR, Charge Q, Light L1, and Dual Q$\oplus$L1). It generates analytic smearing matrices, modifies definitions, runs the C binaries over scenarios, and orchestrates final summary plots.
 
-To compile:
+## Compilation and Running
+To compile the GLoBES C simulations:
+```bash
+make dune
+make dune_hie
+make dune_stage
+make dune_res
+```
 
-- make dune
-- make dune_hie
-- make dune_stage
-- make dune_res
+To run a specific binary directly, pass the output tag:
+```bash
+./dune dune_dcp_test.dat
+```
 
-A script all.sh that can change the smear matrix and run everything. 
-Tag “ori” is the original result in DUNE. Others are the number of different reconstruction method. For conventions, please refer to this paper: https://journals.aps.org/prd/abstract/10.1103/PhysRevD.111.032007
+Batch/Automated Execution:
+- `all.sh` combined with `process.sh <tag>` allows you to quickly modify smearing includes and process the binaries in batch.
+- `run_scenarios.py` orchestrates the entire sequence (configuration, GLoBES execution, and python plotting) dynamically. 
 
-- 0-2 are for Q1 to Q3; 
-- 3 is for Q4 which we didn’t shown in the paper.
-   4 is for L1.
+Conventions (Refer to [Phys. Rev. D 111, 032007](https://journals.aps.org/prd/abstract/10.1103/PhysRevD.111.032007)):
+- Tag `ori` is the original result in DUNE. Other tags typically represent different reconstruction methods.
+- `0-2` are for Q1 to Q3.
+- `3` is for Q4 (not shown in the paper).
+- `4` is for L1.
 
-In process.sh you can choose whatever you want to run.
+Outputs (e.g., `dune_dcp_{tag}.dat`) can be drawn using `plot.cc` or Python scripts.
 
-For delta CP, the output result would be dune_dcp_{tag}.dat and the result can be drawn in plot.cc
+## Directory Structure
+- **`eff/`**: Contains pre-simulated event selection efficiencies and background rejection rates for various interaction modes.
+- **`flux/`**: Houses the DUNE neutrino and antineutrino beam flux profiles (neutrino energy spectra inputs). This defines the unoscillated energy spectra of the beam ($\Phi(E)$).
+- **`smr/`**: Includes parameter files and migration matrices defining energy "smearing", simulating how true neutrino energy degrades into reconstructed energy across different readouts.
+- **`xsec/`**: Holds neutrino interaction cross-sections ($\sigma(E)$) for nominal Charged Current and Neutral Current interactions (e.g., from GENIE).
 
-Some other information:
-- Smearing matrix is defined in folder smr/
-- DUNE flux is in the folder flux/
-- Channels and rules are defined in DUNE_GLoBES.glb
-- Systematic uncertainties are defined in definitions.inc
+## Runtime Simulation Flow
+1. **Scenario Configuration:** A user (or wrapping scripts) swaps out smearing matrix files within `smr/` and updates systematic uncertainties tracking inside `definitions.inc`.
+2. **GLoBES Initialization:** The C executable loads `DUNE_GLoBES.glb`. This central file pulls in configurations from `definitions.inc`, `flux/`, `xsec/`, `eff/`, and `smr/`.
+3. **Simulation Mapping:** GLoBES multiplies the raw beam spectra by interaction rates and applies the oscillation formulas to generate a "True" expected event spectrum. It then applies acceptance efficiencies and the energy resolution matrices to map the energies to the reconstructed bins.
+4. **Minimization and Systematics:** GLoBES uses `chiMultiExp` to apply the fixed normalization errors from `definitions.inc`, allowing the internal fitter to dynamically float the signal and background predicted rates to find the minimum possible $\chi^2$ significance.
+5. **Data Generation:** It serializes the $\Delta \chi^2$ evaluations into `.dat` files logging sensitivity.
+6. **Post-Processing:** Scripts parse the generated `.dat` arrays and output comparative visual histograms.
+
+## Handling of Systematic Uncertainties
+
+This codebase collapses systematic uncertainties into simple normalization errors without propagating complex covariance matrices for specific flux beams or nuclear targets. The nominal simulation data in `flux/` and `xsec/` are used *only* for computing the nominal event rates before effects are applied, not the uncertainties themselves.
+
+### Identifying and Tracking Systematics
+Systematics are defined in two primary files:
+1. **`definitions.inc`**: Defines the physical fractional magnitudes of the systematic uncertainties.
+    - Signal uncertainties (e.g., `ERR_NUE_SIG = 0.02` for 2% on electron neutrino appearance).
+    - Background uncertainties (e.g., `ERR_NUMU_BG = 0.05` for 5% on background muon neutrinos).
+2. **`syst_list.inc`**: Maps these defined scalars into system objects that the GLoBES C-engine internal parser understands.
+
+These scalars cannot be directly backtracked to localized flux or xsec parameters individually because they operate as global uniform pulls.
+
+### The Role of `chiMultiExp`
+The `chiMultiExp` function is the core $\chi^2$ evaluation routine. It performs the following:
+1. **Baseline $\chi^2$:** Uses a Poisson log-likelihood ratio to compare simulated "expected" versus "observed" event rates per energy bin.
+2. **Pull Parameters:** Introduces nuisance parameters (pulls) for every systemic uncertainty defined, shifting the predictions up or down by the assigned percentages.
+3. **Penalty Term:** Penalizes the $\chi^2$ for pulling these parameters away from zero using a Gaussian penalty.
+4. **Minimization:** Finds the worst-case scenario (minimum possible $\chi^2$ difference) by minimizing across all highly-correlated sub-channels simultaneously (e.g., integrating appearance and disappearance limits together).
