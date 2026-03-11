@@ -51,12 +51,12 @@ char *MYFILE=argv[1];
   /* Define standard oscillation parameters */
  // double theta12 = asin(sqrt(0.8))/2;
  // double theta13 = asin(sqrt(0.001))/2;
-  double theta12 = 0.59;
-  double theta13 = 0.15;
-  double theta23 = 0.866;
+  double theta12 = 0.59016;
+  double theta13 = 0.15065;
+  double theta23 = 0.86734;
   double deltacp = 0;
-  double sdm = 7.39e-5;
-  double ldm = 2.451e-3;
+  double sdm = 7.49e-5;
+  double ldm = 2.513e-3;
   
   /* Initialize parameter vector(s) */
   glb_params true_values = glbAllocParams();
