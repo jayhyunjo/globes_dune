@@ -1,6 +1,6 @@
 """
-CP Violation Sensitivity: 4 scenarios overlaid (3.5+3.5 yr = 336 kt*MW*yr).
-Compares: DUNE TDR (ori), Q1, Q3, L1.
+CP Violation Sensitivity: 5 scenarios overlaid (3.5+3.5 yr = 336 kt*MW*yr).
+Compares: DUNE TDR (ori), Q1, Q, Q3, L1.
 Exposure: 40 kt, 3.5+3.5 yr, 1.1e21 POT/yr, baseline 1284.9 km.
 Reference: arXiv:2503.04432 Fig. 2 (left) and TDR arXiv:2002.03005 Fig. 5.17.
 """
@@ -64,9 +64,9 @@ ax.text(0, 0.38,
         fontsize=7.5, va="bottom", ha="center",
         bbox=dict(boxstyle="round,pad=0.3", facecolor="lightyellow", alpha=0.85))
 
-fig.savefig("cp_4scenarios_336.pdf", dpi=150)
-fig.savefig("cp_4scenarios_336.png", dpi=150)
-print("Saved: cp_4scenarios_336.pdf / .png")
+fig.savefig("cp_5scenarios_336.pdf", dpi=150)
+fig.savefig("cp_5scenarios_336.png", dpi=150)
+print("Saved: cp_5scenarios_336.pdf / .png")
 
 print("\n--- Summary (3.5+3.5 yr, 336 kt*MW*yr) ---")
 print(f"{'Scenario':<12} {'Peak sigma':>12} {'Peak dCP':>12} {'>3s frac':>10} {'>5s frac':>10}")
