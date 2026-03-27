@@ -13,8 +13,8 @@ Evaluates DUNE's sensitivity to $\delta_{CP}$ assuming a 336 kt$\cdot$MW$\cdot$y
 - **Run Command**: `python3 plot_cp_5scenarios.py` (uses existing `dune_dcp_*_336.dat` files).
 - **Tool**: `dune.c` computes the sensitivity.
 
-### 2. Mass Ordering Sensitivity (Figure 6)
-Reproduces Figure 6 from [arXiv:2503.04432], showing MO sensitivity vs $\delta_{CP}$ for 50/50 and 100% FHC scenarios.
+### 2. Mass Ordering Sensitivity (Fig. 6 from early MO discovery study)
+Reproduces Figure 6 from early MO discovery study, showing MO sensitivity vs $\delta_{CP}$ for 50/50 and 100% FHC scenarios.
 - **Run Command**: `python3 plot_fig6.py` (uses existing `mo_fig6_*.dat` files).
 - **Tool**: `dune_mo_5050.c` and `dune_mo_100fhc.c` generate the data.
 
