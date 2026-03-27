@@ -67,6 +67,21 @@ dune_stage: dune_stage.o myio.o
 dune_res: dune_res.o myio.o
 	gcc dune_res.o myio.o -o dune_res  $(LDFLAGS) $(local_LDFLAGS)
 
+dune_mo: dune_mo.o myio.o
+	gcc dune_mo.o myio.o -o dune_mo  $(LDFLAGS) $(local_LDFLAGS)
+
+dune_mo_5050: dune_mo_5050.o myio.o
+	gcc dune_mo_5050.o myio.o -o dune_mo_5050  $(LDFLAGS) $(local_LDFLAGS)
+
+dune_mo_100fhc: dune_mo_100fhc.o myio.o
+	gcc dune_mo_100fhc.o myio.o -o dune_mo_100fhc  $(LDFLAGS) $(local_LDFLAGS)
+
+dune_mo_100fhc_corr: dune_mo_100fhc_corr.o myio.o
+	gcc dune_mo_100fhc_corr.o myio.o -o dune_mo_100fhc_corr  $(LDFLAGS) $(local_LDFLAGS)
+
+dune_mo_5050_corr: dune_mo_5050_corr.o myio.o
+	gcc dune_mo_5050_corr.o myio.o -o dune_mo_5050_corr  $(LDFLAGS) $(local_LDFLAGS)
+
 globes-discovery: globes-discovery.o  glb_tools_header.o glb_tools_parser.o glb_tools_eightfold.o
 	gcc globes-discovery.o  glb_tools_header.o glb_tools_parser.o glb_tools_eightfold.o -o globes-discovery  $(LDFLAGS) $(local_LDFLAGS)
 

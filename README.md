@@ -1,73 +1,37 @@
-# globes_dune
+# DUNE GLoBES Sensitivity Studies
+
 DUNE sensitivity study using GLoBES (https://www.mpi-hd.mpg.de/personalhomes/globes/index.html).
+This repository contains tools to evaluate CP Violation and Mass Ordering sensitivity for various DUNE detector performance scenarios (TDR, Q1, Q, Q3, L1) as described in [arXiv:2503.04432](https://arxiv.org/abs/2503.04432).
 
-Originally written by Xuyang Ning (xning@bnl.gov).
+## Core Capabilities
 
-Requires GLoBES v3.2.18 to run.
+### 1. CP Violation Sensitivity (5 Scenarios)
+Evaluates DUNE's sensitivity to $\delta_{CP}$ assuming a 336 kt$\cdot$MW$\cdot$yr exposure (3.5 yr neutrino + 3.5 yr antineutrino).
 
-## Main Entrypoints
-- `dune.c`: Evaluates DUNE’s sensitivity to $\delta_{CP}$ (CP Violation).
-- `dune_hie.c`: Evaluates DUNE's sensitivity to mass hierarchy / mass ordering (NMO vs. IMO).
-- `dune_stage.c`: Evaluates DUNE staged exposure sensitivity.
-- `dune_res.c`: Evaluates energy resolution sensitivities. (Note: This result is not consistent with DUNE TDR).
-- `run_scenarios.py`: A python pipeline that automatically compares four distinct calorimeter scenarios (TDR, Charge Q, Light L1, and Dual Q$\oplus$L1). It generates analytic smearing matrices, modifies definitions, runs the C binaries over scenarios, and orchestrates final summary plots.
+- **Data Generation**: `dune.c` computes the sensitivity. Compile with `gcc dune.c myio.c -o dune -lglobes -lm`.
+- **Plotting**: `plot_cp_5scenarios.py` overlays the 5 performance scenarios.
+- **Run Command**: `python3 plot_cp_5scenarios.py` (uses existing `dune_dcp_*_336.dat` files).
 
-## Compilation and Running
-To compile the GLoBES C simulations:
-```bash
-make dune
-make dune_hie
-make dune_stage
-make dune_res
-```
+### 2. Mass Ordering Sensitivity (Figure 6 Reproduction)
+Reproduces Figure 6 from [arXiv:2503.04432], showing MO sensitivity vs $\delta_{CP}$ for 50/50 FHC-RHC split and 100% FHC scenarios.
 
-To run a specific binary directly, pass the output tag:
-```bash
-./dune dune_dcp_test.dat
-```
+- **Data Generation**: `dune_mo_5050.c` and `dune_mo_100fhc.c`.
+- **Plotting**: `plot_fig6.py` replicates the paper's aesthetics (True NO curve, 68/95% bands).
+- **Run Command**: `python3 plot_fig6.py` (uses existing `mo_fig6_*.dat` files).
 
-Batch/Automated Execution:
-- `all.sh` combined with `process.sh <tag>` allows you to quickly modify smearing includes and process the binaries in batch.
-- `run_scenarios.py` orchestrates the entire sequence (configuration, GLoBES execution, and python plotting) dynamically. 
-
-Conventions (Refer to [Phys. Rev. D 111, 032007](https://journals.aps.org/prd/abstract/10.1103/PhysRevD.111.032007)):
-- Tag `ori` is the original result in DUNE. Other tags typically represent different reconstruction methods.
-- `0-2` are for Q1 to Q3.
-- `3` is for Q4 (not shown in the paper).
-- `4` is for L1.
-
-Outputs (e.g., `dune_dcp_{tag}.dat`) can be drawn using `plot.cc` or Python scripts.
+### 3. Mass Ordering (5 Scenarios)
+- **Plotting**: `plot_mo_5scenarios.py` overlays MO sensitivity for the 5 scenarios.
+- **Run Command**: `python3 plot_mo_5scenarios.py`.
 
 ## Directory Structure
-- **`eff/`**: Contains pre-simulated event selection efficiencies and background rejection rates for various interaction modes.
-- **`flux/`**: Houses the DUNE neutrino and antineutrino beam flux profiles (neutrino energy spectra inputs). This defines the unoscillated energy spectra of the beam ($\Phi(E)$).
-- **`smr/`**: Includes parameter files and migration matrices defining energy "smearing", simulating how true neutrino energy degrades into reconstructed energy across different readouts.
-- **`xsec/`**: Holds neutrino interaction cross-sections ($\sigma(E)$) for nominal Charged Current and Neutral Current interactions (e.g., from GENIE).
+- **`eff/`**: Event selection efficiencies and background rejection rates.
+- **`flux/`**: DUNE neutrino and antineutrino beam flux profiles.
+- **`smr/`**: Energy resolution "smearing" matrices for different scenarios (TDR, Q, L1).
+- **`xsec/`**: Neutrino interaction cross-sections.
+- **`definitions.inc` / `syst_list.inc`**: Definitions of systematic uncertainties and GLoBES χ² rules.
 
-## Runtime Simulation Flow
-1. **Scenario Configuration:** A user (or wrapping scripts) swaps out smearing matrix files within `smr/` and updates systematic uncertainties tracking inside `definitions.inc`.
-2. **GLoBES Initialization:** The C executable loads `DUNE_GLoBES.glb`. This central file pulls in configurations from `definitions.inc`, `flux/`, `xsec/`, `eff/`, and `smr/`.
-3. **Simulation Mapping:** GLoBES multiplies the raw beam spectra by interaction rates and applies the oscillation formulas to generate a "True" expected event spectrum. It then applies acceptance efficiencies and the energy resolution matrices to map the energies to the reconstructed bins.
-4. **Minimization and Systematics:** GLoBES uses `chiMultiExp` to apply the fixed normalization errors from `definitions.inc`, allowing the internal fitter to dynamically float the signal and background predicted rates to find the minimum possible $\chi^2$ significance.
-5. **Data Generation:** It serializes the $\Delta \chi^2$ evaluations into `.dat` files logging sensitivity.
-6. **Post-Processing:** Scripts parse the generated `.dat` arrays and output comparative visual histograms.
+## Systematic Uncertainties
+The simulation uses simple normalization errors (e.g., 2% on signal, 5-20% on backgrounds) managed via `glbChiMultiExp` and `glbChiAll`.
+- **`definitions.inc`**: Physical magnitudes of uncertainties.
+- **`syst_list.inc`**: Mapping of uncertainties to GLoBES systematic pulls.
 
-## Handling of Systematic Uncertainties
-
-This codebase collapses systematic uncertainties into simple normalization errors without propagating complex covariance matrices for specific flux beams or nuclear targets. The nominal simulation data in `flux/` and `xsec/` are used *only* for computing the nominal event rates before effects are applied, not the uncertainties themselves.
-
-### Identifying and Tracking Systematics
-Systematics are defined in two primary files:
-1. **`definitions.inc`**: Defines the physical fractional magnitudes of the systematic uncertainties.
-    - Signal uncertainties (e.g., `ERR_NUE_SIG = 0.02` for 2% on electron neutrino appearance).
-    - Background uncertainties (e.g., `ERR_NUMU_BG = 0.05` for 5% on background muon neutrinos).
-2. **`syst_list.inc`**: Maps these defined scalars into system objects that the GLoBES C-engine internal parser understands.
-
-These scalars cannot be directly backtracked to localized flux or xsec parameters individually because they operate as global uniform pulls.
-
-### The Role of `chiMultiExp`
-The `chiMultiExp` function is the core $\chi^2$ evaluation routine. It performs the following:
-1. **Baseline $\chi^2$:** Uses a Poisson log-likelihood ratio to compare simulated "expected" versus "observed" event rates per energy bin.
-2. **Pull Parameters:** Introduces nuisance parameters (pulls) for every systemic uncertainty defined, shifting the predictions up or down by the assigned percentages.
-3. **Penalty Term:** Penalizes the $\chi^2$ for pulling these parameters away from zero using a Gaussian penalty.
-4. **Minimization:** Finds the worst-case scenario (minimum possible $\chi^2$ difference) by minimizing across all highly-correlated sub-channels simultaneously (e.g., integrating appearance and disappearance limits together).
